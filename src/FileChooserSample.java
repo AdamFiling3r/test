@@ -58,17 +58,15 @@ public final class FileChooserSample extends Application {
                             Image tempImg = new Image(file.toURI().toString());
 
                             imgOrig.setImage(tempImg);
-                            imgOrig.setFitHeight(stage.getHeight()/5);
-                            imgOrig.setFitWidth(stage.getWidth()/5);
+                            imgOrig.setFitHeight(stage.getHeight()/2);
+                            imgOrig.setFitWidth(stage.getWidth()/2);
 
                             Image graySc = null;
-                            try {
-                                graySc = proc.toGrayScale(file);
-                            } catch (InterruptedException ex) {
-                                throw new RuntimeException(ex);
-                            }
+                            graySc = proc.processImage(file);
 
                             imgProc.setImage(graySc);
+                            imgProc.setFitHeight(stage.getHeight()/2);
+                            imgProc.setFitWidth(stage.getWidth()/2);
 
 
 
