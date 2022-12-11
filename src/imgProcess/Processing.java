@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 
 
 public class Processing {
@@ -36,13 +37,14 @@ public class Processing {
 
         Mat source = toGrayScale(image);
 
-        //detecting edges
-        Imgproc.Canny(source, source, 200, 25);
+        //binarizing the image
+        int adapt = Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C;
+        int thresh = Imgproc.THRESH_BINARY_INV;
+        Imgproc.adaptiveThreshold(source, source, 225, adapt, thresh, 11, 2);
 
-        Imgproc.dilate(source, source, new Mat(), new Point(-1, -1), 1);
 
 
-        findLines(source);
+
 
         MatOfByte byteMat = new MatOfByte();
         Imgcodecs.imencode(".bmp", source, byteMat);
@@ -71,6 +73,8 @@ public class Processing {
         }
 
     }
+
+
 
 
 }
