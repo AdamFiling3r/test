@@ -11,10 +11,12 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class Processing {
 
+    public ArrayList<double[]> pixels = new ArrayList<>();
 
     private Mat toGrayScale(File image) {
 
@@ -44,14 +46,25 @@ public class Processing {
 
 
 
-
-
         MatOfByte byteMat = new MatOfByte();
         Imgcodecs.imencode(".bmp", source, byteMat);
         return new Image(new ByteArrayInputStream(byteMat.toArray()));
 
 
     }
+
+    /*private ArrayList<double[]> interateImage(Mat source){
+
+        ArrayList<double[]> pixel = new ArrayList<>();
+        // Go through the image and print the value of each pixel
+        for (int i = 0; i < source.rows(); i++) {
+            for (int j = 0; j < source.cols(); j++) {
+                pixel.add(source.get(i, j));
+
+            }
+        }
+        return pixel;
+    }*/
 
     private void findLines(Mat source){
         //detecting lines
