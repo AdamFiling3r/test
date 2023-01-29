@@ -2,16 +2,14 @@ package imgProcess;
 
 import javafx.scene.image.Image;
 import org.opencv.core.*;
-import org.opencv.highgui.HighGui;
+
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 
 public class Processing {
@@ -42,12 +40,17 @@ public class Processing {
         //binarizing the image
         int adapt = Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C;
         int thresh = Imgproc.THRESH_BINARY_INV;
-        Imgproc.adaptiveThreshold(source, source, 225, adapt, thresh, 11, 2);
+        Imgproc.adaptiveThreshold(source, source, 225, adapt, thresh, 15, 2);
 
+        source = skeleton(source);
 
+        getNeighbors(source);
 
         MatOfByte byteMat = new MatOfByte();
         Imgcodecs.imencode(".bmp", source, byteMat);
+
+
+
         return new Image(new ByteArrayInputStream(byteMat.toArray()));
 
 
@@ -65,6 +68,34 @@ public class Processing {
         }
         return pixel;
     }*/
+    private Mat skeleton(Mat img)
+    {
+
+        boolean done = false;
+
+        Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_CROSS, new Size(3,3));
+        Mat eroded = new Mat();
+        Mat temp = new Mat();
+        Mat skel = new Mat (img.rows(), img.cols(), CvType.CV_8UC1, new Scalar (0));
+
+        int size = img.cols() * img.rows();
+        int zeros = 0;
+
+        while(!done)
+        {
+            Imgproc.erode(img, eroded, element);
+            Imgproc.dilate(eroded, temp, element);
+            Core.subtract(img, temp, temp);
+            Core.bitwise_or(skel, temp, skel);
+            eroded.copyTo(img);
+
+            zeros = size - Core.countNonZero(img);
+            if(zeros == size)
+                done = true;
+        }
+
+        return skel;
+    }
 
     private void findLines(Mat source){
         //detecting lines
@@ -86,6 +117,47 @@ public class Processing {
         }
 
     }
+
+    public static void getNeighbors(Mat image) {
+
+        // Loop through the neighborhood and fill in the pixel values
+        for (int i = 1; i < image.rows(); i++) {
+            for (int j = 1; j < image.cols(); j++) {
+                double[] white = {225.0};
+                if (image.get(i, j) == white ) {
+
+
+                    double[] left = image.get(i, j - 1);
+                    double[] right = image.get(i, j + 1);
+                    double[] up = image.get(i - 1, j);
+                    double[] down = image.get(i + 1, j);
+                    int neighbors = 0;
+
+                    if (left == white) {
+                        neighbors++;
+                    }
+                    if (right == white) {
+                        neighbors++;
+                    }
+                    if (up == white) {
+                        neighbors++;
+                    }
+                    if (down == white) {
+                        neighbors++;
+                    }
+
+                    if (neighbors > 2) {
+                        System.out.println(i + ", " + j + ": has 2 neighbors");
+                    }
+                    System.out.println("Is white");
+                }
+            }
+        }
+
+    }
+
+
+
 
 
 
