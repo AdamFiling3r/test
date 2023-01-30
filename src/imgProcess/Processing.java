@@ -44,7 +44,7 @@ public class Processing {
 
         source = skeleton(source);
 
-        getNeighbors(source);
+        source = getNeighbors(source);
 
         MatOfByte byteMat = new MatOfByte();
         Imgcodecs.imencode(".bmp", source, byteMat);
@@ -73,7 +73,8 @@ public class Processing {
 
         boolean done = false;
 
-        Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_CROSS, new Size(3,3));
+        Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5,5
+        ));
         Mat eroded = new Mat();
         Mat temp = new Mat();
         Mat skel = new Mat (img.rows(), img.cols(), CvType.CV_8UC1, new Scalar (0));
@@ -97,6 +98,7 @@ public class Processing {
         return skel;
     }
 
+
     private void findLines(Mat source){
         //detecting lines
         Mat lines = new Mat();
@@ -118,19 +120,21 @@ public class Processing {
 
     }
 
-    public static void getNeighbors(Mat image) {
+    public static Mat getNeighbors(Mat image) {
 
         // Loop through the neighborhood and fill in the pixel values
-        for (int i = 1; i < image.rows(); i++) {
-            for (int j = 1; j < image.cols(); j++) {
-                double[] white = {225.0};
-                if (image.get(i, j) == white ) {
+        double white = 225.0;
+        Mat finished = new Mat();
+        image.copyTo(finished);
+        for (int i = 1; i < image.rows() - 1; i++) {
+            for (int j = 1; j < image.cols() - 1; j++) {
 
+                if (image.get(i, j)[0] == white ) {
 
-                    double[] left = image.get(i, j - 1);
-                    double[] right = image.get(i, j + 1);
-                    double[] up = image.get(i - 1, j);
-                    double[] down = image.get(i + 1, j);
+                    double left = image.get(i, j - 1)[0];
+                    double right = image.get(i, j + 1)[0];
+                    double up = image.get(i - 1, j)[0];
+                    double down = image.get(i + 1, j)[0];
                     int neighbors = 0;
 
                     if (left == white) {
@@ -146,13 +150,15 @@ public class Processing {
                         neighbors++;
                     }
 
-                    if (neighbors > 2) {
-                        System.out.println(i + ", " + j + ": has 2 neighbors");
+                    if (neighbors == 2) {
+                        System.out.println(i + ", " + j + ": has less than 2 neighbors");
+                        Imgproc.circle(finished, new Point(i, j), 10, new Scalar(225.0, 0, 0));
                     }
-                    System.out.println("Is white");
                 }
             }
         }
+
+        return finished;
 
     }
 
