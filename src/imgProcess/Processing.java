@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import imgProcess.SVMC;
 
 
 public class Processing {
@@ -33,7 +34,7 @@ public class Processing {
 
     }
 
-    public Image processImage(File image){
+    public Image processImage(File image) {
 
         Mat source = toGrayScale(image);
 
@@ -42,13 +43,13 @@ public class Processing {
         int thresh = Imgproc.THRESH_BINARY_INV;
         Imgproc.adaptiveThreshold(source, source, 225, adapt, thresh, 15, 2);
 
-        source = skeleton(source);
+        //source = skeleton(source);
+
 
         source = getNeighbors(source);
 
         MatOfByte byteMat = new MatOfByte();
         Imgcodecs.imencode(".bmp", source, byteMat);
-
 
 
         return new Image(new ByteArrayInputStream(byteMat.toArray()));
@@ -57,33 +58,29 @@ public class Processing {
     }
 
     /*private ArrayList<double[]> interateImage(Mat source){
-
         ArrayList<double[]> pixel = new ArrayList<>();
         // Go through the image and print the value of each pixel
         for (int i = 0; i < source.rows(); i++) {
             for (int j = 0; j < source.cols(); j++) {
                 pixel.add(source.get(i, j));
-
             }
         }
         return pixel;
     }*/
-    private Mat skeleton(Mat img)
-    {
+    private Mat skeleton(Mat img) {
 
         boolean done = false;
 
-        Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5,5
+        Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5
         ));
         Mat eroded = new Mat();
         Mat temp = new Mat();
-        Mat skel = new Mat (img.rows(), img.cols(), CvType.CV_8UC1, new Scalar (0));
+        Mat skel = new Mat(img.rows(), img.cols(), CvType.CV_8UC1, new Scalar(0));
 
         int size = img.cols() * img.rows();
         int zeros = 0;
 
-        while(!done)
-        {
+        while (!done) {
             Imgproc.erode(img, eroded, element);
             Imgproc.dilate(eroded, temp, element);
             Core.subtract(img, temp, temp);
@@ -91,7 +88,7 @@ public class Processing {
             eroded.copyTo(img);
 
             zeros = size - Core.countNonZero(img);
-            if(zeros == size)
+            if (zeros == size)
                 done = true;
         }
 
@@ -99,12 +96,12 @@ public class Processing {
     }
 
 
-    private void findLines(Mat source){
+    private void findLines(Mat source) {
         //detecting lines
         Mat lines = new Mat();
 
         double rho = 1;
-        double theta = Math.PI/180;
+        double theta = Math.PI / 180;
         int thresh = 150;
 
         Imgproc.HoughLines(source, lines, rho, theta, thresh);
@@ -112,9 +109,9 @@ public class Processing {
         for (int x = 0; x < lines.rows(); x++) {
             double rh = lines.get(x, 0)[0], the = lines.get(x, 0)[1];
             double a = Math.cos(the), b = Math.sin(the);
-            double x0 = a*rh, y0 = b*rh;
-            Point pt1 = new Point(Math.round(x0 + 1000*(-b)), Math.round(y0 + 1000*(a)));
-            Point pt2 = new Point(Math.round(x0 - 1000*(-b)), Math.round(y0 - 1000*(a)));
+            double x0 = a * rh, y0 = b * rh;
+            Point pt1 = new Point(Math.round(x0 + 1000 * (-b)), Math.round(y0 + 1000 * (a)));
+            Point pt2 = new Point(Math.round(x0 - 1000 * (-b)), Math.round(y0 - 1000 * (a)));
             Imgproc.line(source, pt1, pt2, new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
         }
 
@@ -122,14 +119,17 @@ public class Processing {
 
     public static Mat getNeighbors(Mat image) {
 
-        // Loop through the neighborhood and fill in the pixel values
+        //loopin
         double white = 225.0;
         Mat finished = new Mat();
         image.copyTo(finished);
-        for (int i = 1; i < image.rows() - 1; i++) {
-            for (int j = 1; j < image.cols() - 1; j++) {
+        double part_width = finished.width()/5;
+        double part_height = finished.height()/5;
+        System.out.println(image.cols());
+        for (double i = 0; i < image.rows(); i += part_height) {
+            for (double j = 0; j < image.cols(); j += part_width) {
 
-                if (image.get(i, j)[0] == white ) {
+                /*if (image.get(i, j)[0] == white) {
 
                     double left = image.get(i, j - 1)[0];
                     double right = image.get(i, j + 1)[0];
@@ -154,18 +154,18 @@ public class Processing {
                         System.out.println(i + ", " + j + ": has less than 2 neighbors");
                         Imgproc.circle(finished, new Point(i, j), 10, new Scalar(225.0, 0, 0));
                     }
-                }
+                }*/
+                Rect roi = new Rect((int) j, (int)i, (int)part_width, (int)part_height);
+                Mat predImg = image.submat(roi).clone();
+                Imgproc.line(finished, new Point(j, i), new Point(j, i + part_height), new Scalar(205.0, 310.0, 30.0));
+                Imgproc.line(finished, new Point(j, i), new Point(j + part_width, i), new Scalar(205.0, 310.0, 30.0));
+                Imgproc.line(finished, new Point(j, i + part_height), new Point(j + part_width, i + part_height), new Scalar(205.0, 310.0, 30.0));
+                Imgproc.line(finished, new Point(j + part_width, i), new Point(j + part_width, i + part_height), new Scalar(205.0, 310.0, 30.0));
+                System.out.println(predImg.cols());
+
             }
         }
 
         return finished;
-
     }
-
-
-
-
-
-
-
 }
