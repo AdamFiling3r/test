@@ -1,6 +1,9 @@
 package imgProcess;
 
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.TermCriteria;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.ml.Ml;
 import org.opencv.ml.SVM;
 
@@ -10,39 +13,53 @@ import java.util.List;
 
 public class SVMC {
 
-    static SVM classifier = SVM.create();
 
     public static void main(String[] args) {
-        List<Mat> pics = new ArrayList<>();
-        Mat label = new Mat();
 
-        File folder = new File("C:\\Users\\Thinkpad\\Documents\\ImageProcess\\traindata\\train");
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+        SVM svm = SVM.create();
+        svm.setType(SVM.C_SVC);
+        svm.setKernel(SVM.LINEAR);
+        svm.setTermCriteria(new TermCriteria(TermCriteria.MAX_ITER, 100, 1e-6));
+
+        List<Mat> pics = new ArrayList<>();
+        Mat label;
+
+        File folder = new File("img\\train");
+        int iter = 0;
         for (File f :
                 folder.listFiles()) {
             File subFolder = new File(f.getAbsolutePath());
+
+            File labelDir = new File("img\\labels");
+            label = Imgcodecs.imread(labelDir.listFiles()[iter].getAbsolutePath());
+
             for (File f2 :
                     subFolder.listFiles()) {
+                    pics.add(Imgcodecs.imread(f2.getAbsolutePath()));
 
             }
+
+            for(int i = 0; i < pics.size(); i++){
+                svm.train(pics.get(i), Ml.ROW_SAMPLE, label);
+            }
+            iter++;
         }
 
-    }
+        svm.save("SVM\\svm.xml");
 
-    public static void training(List<Mat> trainingPics, Mat trainingLabel){
-
-
-    for(int i = 0; i < trainingPics.size(); i++){
-        classifier.train(trainingPics.get(i), Ml.ROW_SAMPLE, trainingLabel);
-    }
 
 
     }
 
-    public static float prediction(Mat pic){
 
-        return classifier.predict(pic);
 
-    }
+//    public static float prediction(Mat pic){
+//
+//        return classifier.predict(pic);
+//
+//    }
 
 
 
