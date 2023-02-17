@@ -1,6 +1,7 @@
 package imgProcess;
 
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -42,6 +43,9 @@ public class SVMC {
             }
 
             for(int i = 0; i < pics.size(); i++){
+                Mat pic = pics.get(i);
+                pic.convertTo(pic, CvType.CV_32F);
+                label.convertTo(label, CvType.CV_32SC1);
                 svm.train(pics.get(i), Ml.ROW_SAMPLE, label);
             }
             iter++;
