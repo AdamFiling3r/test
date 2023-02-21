@@ -123,11 +123,11 @@ public class Processing {
         double white = 225.0;
         Mat finished = new Mat();
         image.copyTo(finished);
-        double part_width = finished.width()/5;
-        double part_height = finished.height()/5;
+        double part_width = image.width()/5;
+        double part_height = image.height()/5;
         System.out.println(image.cols());
-        for (double i = 0; i < image.rows(); i += part_height) {
-            for (double j = 0; j < image.cols(); j += part_width) {
+        for (double i = 0; i < image.rows() - part_height; i += part_height) {
+            for (double j = 0; j < image.cols() - part_width; j += part_width) {
 
                 /*if (image.get(i, j)[0] == white) {
 
@@ -155,13 +155,17 @@ public class Processing {
                         Imgproc.circle(finished, new Point(i, j), 10, new Scalar(225.0, 0, 0));
                     }
                 }*/
-                Rect roi = new Rect((int) j, (int)i, (int)part_width, (int)part_height);
+                System.out.println("J: " + j);
+                System.out.println("I: " + i);
+                System.out.println("Widht: " + part_width);
+                System.out.println("Height: " + part_height);
+                Rect roi = new Rect((int) j, (int) i, (int)part_width, (int)part_height);
+
                 Mat predImg = image.submat(roi).clone();
                 Imgproc.line(finished, new Point(j, i), new Point(j, i + part_height), new Scalar(205.0, 310.0, 30.0));
                 Imgproc.line(finished, new Point(j, i), new Point(j + part_width, i), new Scalar(205.0, 310.0, 30.0));
                 Imgproc.line(finished, new Point(j, i + part_height), new Point(j + part_width, i + part_height), new Scalar(205.0, 310.0, 30.0));
                 Imgproc.line(finished, new Point(j + part_width, i), new Point(j + part_width, i + part_height), new Scalar(205.0, 310.0, 30.0));
-                System.out.println(predImg.cols());
 
             }
         }

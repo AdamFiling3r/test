@@ -5,6 +5,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 import org.opencv.ml.Ml;
 import org.opencv.ml.SVM;
 
@@ -32,9 +33,10 @@ public class SVMC {
         for (File f :
                 folder.listFiles()) {
             File subFolder = new File(f.getAbsolutePath());
+            int[] labels = {iter, iter, iter, iter};
+            label = new Mat(4, 1, CvType.CV_32S);
+            label.put(0, 0, labels);
 
-            File labelDir = new File("img\\labels");
-            label = Imgcodecs.imread(labelDir.listFiles()[iter].getAbsolutePath());
 
             for (File f2 :
                     subFolder.listFiles()) {
@@ -44,8 +46,9 @@ public class SVMC {
 
             for(int i = 0; i < pics.size(); i++){
                 Mat pic = pics.get(i);
+                Imgproc.cvtColor(pic, pic, Imgproc.COLOR_RGB2GRAY);
                 pic.convertTo(pic, CvType.CV_32F);
-                label.convertTo(label, CvType.CV_32SC1);
+                Imgproc.cvtColor(label, label, Imgproc.COLOR_RGB2GRAY);
                 svm.train(pics.get(i), Ml.ROW_SAMPLE, label);
             }
             iter++;
